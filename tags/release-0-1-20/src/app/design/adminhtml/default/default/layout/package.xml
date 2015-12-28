@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * NOTICE OF LICENSE
+ * 
+ * Faett_Package is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Faett_Package is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Faett_Package.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Faett_Package to newer
+ * versions in the future. If you wish to customize Faett_Package for your
+ * needs please refer to http://www.faett.net for more information.
+ *
+ * @category   Faett
+ * @package    Faett_Package
+ * @copyright  Copyright (c) 2009 <tw@faett.net> Tim Wagner
+ * @license    <http://www.gnu.org/licenses/> 
+ * 			   GNU General Public License (GPL 3)
+ */
+-->
+<layout>
+    <adminhtml_catalog_product_package>
+        <reference name="product_tabs">
+            <action method="addTab">
+            	<name>package</name>
+            	<block>package/adminhtml_catalog_product_edit_tab_package</block>
+            </action>
+            <action method="addTab">
+            	<name>maintainer</name>
+            	<block>package/adminhtml_catalog_product_edit_tab_maintainer</block>
+            </action>
+        </reference>
+    </adminhtml_catalog_product_package>	  
+	<adminhtml_sales_order_view>
+		<reference name="order_items">
+			<action method="addItemRender">
+				<type>package</type>
+				<block>adminhtml/sales_order_view_items_renderer_default</block>
+				<template>package/sales/order/view/items/renderer/package.phtml</template>
+			</action>
+			<action method="addColumnRender">
+				<column>package</column>
+				<block>package/adminhtml_sales_items_column_package_name</block>
+				<template>package/sales/items/column/package/name.phtml</template>
+			</action>
+		</reference>
+	</adminhtml_sales_order_view>
+	<adminhtml_sales_order_invoice_new>
+		<reference name="order_items">
+			<action method="addItemRender">
+				<type>package</type>
+				<block>adminhtml/sales_items_renderer_default</block>
+				<template>package/sales/order/invoice/create/items/renderer/package.phtml</template>
+			</action>
+			<action method="addColumnRender">
+				<column>package</column>
+				<block>package/adminhtml_sales_items_column_package_name</block>
+				<template>package/sales/items/column/package/invoice/name.phtml</template>
+			</action>
+		</reference>
+	</adminhtml_sales_order_invoice_new>
+	<adminhtml_sales_order_invoice_updateqty>
+		<reference name="order_items">
+			<action method="addItemRender">
+				<type>package</type>
+				<block>adminhtml/sales_items_renderer_default</block>
+				<template>package/sales/order/invoice/create/items/renderer/package.phtml
+				</template>
+			</action>
+			<action method="addColumnRender">
+				<column>package</column>
+				<block>package/adminhtml_sales_items_column_package_name</block>
+				<template>package/sales/items/column/package/invoice/name.phtml</template>
+			</action>
+		</reference>
+	</adminhtml_sales_order_invoice_updateqty>
+	<adminhtml_sales_order_invoice_view>
+		<reference name="invoice_items">
+			<action method="addItemRender">
+				<type>package</type>
+				<block>adminhtml/sales_items_renderer_default</block>
+				<template>package/sales/order/invoice/view/items/renderer/package.phtml</template>
+			</action>
+			<action method="addColumnRender">
+				<column>package</column>
+				<block>package/adminhtml_sales_items_column_package_name</block>
+				<template>package/sales/items/column/package/invoice/name.phtml</template>
+			</action>
+		</reference>
+	</adminhtml_sales_order_invoice_view>
+	<adminhtml_sales_order_creditmemo_new>
+		<reference name="order_items">
+			<action method="addItemRender">
+				<type>package</type>
+				<block>adminhtml/sales_items_renderer_default</block>
+				<template>package/sales/order/creditmemo/create/items/renderer/package.phtml</template>
+			</action>
+			<action method="addColumnRender">
+				<column>package</column>
+				<block>package/adminhtml_sales_items_column_package_name</block>
+				<template>package/sales/items/column/package/creditmemo/name.phtml</template>
+			</action>
+		</reference>
+	</adminhtml_sales_order_creditmemo_new>
+	<adminhtml_sales_order_creditmemo_updateqty>
+		<reference name="order_items">
+			<action method="addItemRender">
+				<type>package</type>
+				<block>adminhtml/sales_items_renderer_default</block>
+				<template>package/sales/order/creditmemo/create/items/renderer/package.phtml</template>
+			</action>
+			<action method="addColumnRender">
+				<column>package</column>
+				<block>package/adminhtml_sales_items_column_package_name</block>
+				<template>package/sales/items/column/package/creditmemo/name.phtml</template>
+			</action>
+		</reference>
+	</adminhtml_sales_order_creditmemo_updateqty>
+	<adminhtml_sales_order_creditmemo_view>
+		<reference name="creditmemo_items">
+			<action method="addItemRender">
+				<type>package</type>
+				<block>adminhtml/sales_items_renderer_default</block>
+				<template>package/sales/order/creditmemo/view/items/renderer/package.phtml</template>
+			</action>
+			<action method="addColumnRender">
+				<column>package</column>
+				<block>package/adminhtml_sales_items_column_package_name</block>
+				<template>package/sales/items/column/package/creditmemo/name.phtml</template>
+			</action>
+		</reference>
+	</adminhtml_sales_order_creditmemo_view>
+</layout>

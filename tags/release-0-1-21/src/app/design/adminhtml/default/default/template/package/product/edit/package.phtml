@@ -1,0 +1,373 @@
+<?php
+
+/**
+ * Faett_Package
+ *
+ * NOTICE OF LICENSE
+ * 
+ * Faett_Package is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Faett_Package is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Faett_Package.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Faett_Package to newer
+ * versions in the future. If you wish to customize Faett_Package for your
+ * needs please refer to http://www.faett.net for more information.
+ *
+ * @category   Faett
+ * @package    Faett_Package
+ * @copyright  Copyright (c) 2009 <tw@faett.net> Tim Wagner
+ * @license    <http://www.gnu.org/licenses/> 
+ * 			   GNU General Public License (GPL 3)
+ */
+
+?>
+
+<?php
+/**
+ * @see Faett_Package_Block_Adminhtml_Catalog_Product_Edit_Tab_Package
+ */
+?>
+<script type="text/javascript">
+//<![CDATA[>
+
+var uploaderTemplate = '<div class="no-display" id="[[idName]]-template">' +
+                            '<div id="{{id}}" class="file-row file-row-narrow">' +
+                                '<span class="file-info">' +
+                                    '<span class="file-info-name">{{name}}</span>' +
+                                    ' ' +
+                                    '<span class="file-info-size">({{size}})</span>' +
+                                '</span>' +
+                                '<span class="progress-text"></span>' +
+                                '<div class="clear"></div>' +
+                            '</div>' +
+                        '</div>' +
+                            '<div class="no-display" id="[[idName]]-template-progress">' +
+                            '{{percent}}% {{uploaded}} / {{total}}' +
+                            '</div>';
+
+var fileListTemplate = '<span class="file-info">' +
+                            '<span class="file-info-name">{{name}}</span>' +
+                            ' ' +
+                            '<span class="file-info-size">({{size}})</span>' +
+                        '</span>';
+
+var Package = {
+    uploaderObj : $H({}),
+    objCount : 0,
+    setUploaderObj : function(type, key, obj){
+        if (!this.uploaderObj.get(type)) {
+            this.uploaderObj.set(type, $H({}));
+        }
+        this.uploaderObj.get(type).set(key, obj);
+    },
+    getUploaderObj : function(type, key){
+        try {
+            return this.uploaderObj.get(type).get(key);
+        } catch (e) {
+            try {
+                console.log(e);
+            } catch (e2) {
+                alert(e.name + '\n' + e.message);
+            }
+        }
+    },
+    unsetUploaderObj : function(type, key){
+        try {
+            this.uploaderObj.get(type).unset(key);
+        } catch (e) {
+            try {
+                console.log(e);
+            } catch (e2) {
+                alert(e.name + '\n' + e.message);
+            }
+        }
+    },
+    massUploadByType : function(type){
+        try {
+            this.uploaderObj.get(type).each(function(item){
+                container = item.value.container.up('tr');
+                if (container.visible() && !container.hasClassName('no-display')) {
+                    item.value.upload();
+                } else {
+                    Package.unsetUploaderObj(type, item.key);
+                }
+            });
+        } catch (e) {
+            try {
+                console.log(e);
+            } catch (e2) {
+                alert(e.name + '\n' + e.message);
+            }
+        }
+    }
+};
+
+Package.FileUploader = Class.create();
+Package.FileUploader.prototype = {
+    type : null,
+    key : null, //key, identifier of uploader obj
+    elmContainer : null, //insert Flex object and templates to elmContainer
+    fileValueName : null, //name of field of JSON data of saved file
+    fileValue : null,
+    idName : null, //id name of elements for unique uploader
+    uploaderText: uploaderTemplate,
+    uploaderSyntax : /(^|.|\r|\n)(\[\[(\w+)\]\])/,
+    uploaderObj : $H({}),
+    config : null,
+    initialize: function (type, key, elmContainer, fileValueName, fileValue ,idName, config) {
+        this.type = type;
+        this.key = key;
+        this.elmContainer = elmContainer;
+        this.fileValueName = fileValueName;
+        this.fileValue = fileValue;
+        this.idName = idName;
+        this.config = config;
+        uploaderTemplate = new Template(this.uploaderText, this.uploaderSyntax);
+        <?php if (!$this->isReadonly()):?>
+        Element.insert(
+            elmContainer,
+            {'top' : uploaderTemplate.evaluate({
+                    'idName' : this.idName,
+                    'fileValueName' : this.fileValueName,
+                    'uploaderObj' : 'Package.getUploaderObj(\''+this.type+'\', \''+this.key+'\')'
+                })
+            }
+        );
+        if ($(this.idName+'_save')) {
+            $(this.idName+'_save').value = this.fileValue.toJSON();
+        }
+        Package.setUploaderObj(
+            this.type,
+            this.key,
+            new Flex.Uploader(this.idName, '<?php echo $this->getSkinUrl('media/uploaderSingle.swf') ?>', this.config)
+        );
+        if (varienGlobalEvents) {
+            varienGlobalEvents.attachEventHandler('tabChangeBefore', Package.getUploaderObj(type, key).onContainerHideBefore);
+        }
+        new Package.FileList(this.idName, Package.getUploaderObj(type, key));
+        <?php endif;?>
+    }
+}
+
+Package.FileList = Class.create();
+Package.FileList.prototype = {
+    file: [],
+    containerId: '',
+    container: null,
+    uploader: null,
+    fileListTemplate: fileListTemplate,
+    templatePattern : /(^|.|\r|\n)({{(\w+)}})/,
+    listTemplate : null,
+    initialize: function (containerId, uploader) {
+        this.containerId  = containerId,
+        this.container = $(this.containerId);
+        this.uploader = uploader;
+        this.uploader.onFilesComplete = this.handleUploadComplete.bind(this);
+        this.file = this.getElement('save').value.evalJSON();
+        this.listTemplate = new Template(this.fileListTemplate, this.templatePattern);
+        this.updateFiles();
+        this.uploader.onFileRemoveAll = this.handleFileRemoveAll.bind(this);
+        this.uploader.onFileSelect = this.handleFileSelect.bind(this);
+    },
+    handleFileRemoveAll: function(fileId) {
+        $(this.containerId+'-new').hide();
+        $(this.containerId+'-old').show();
+    },
+    handleFileSelect: function() {
+        $(this.containerId+'_type').checked = true;
+    },
+    getElement: function (name) {
+        return $(this.containerId + '_' + name);
+    },
+    handleUploadComplete: function (files) {
+        files.each(function(item) {
+           if (!item.response.isJSON()) {
+                try {
+                    console.log(item.response);
+                } catch (e2) {
+                    alert(item.response);
+                }
+               return;
+           }
+           var response = item.response.evalJSON();
+           if (response.error) {
+               return;
+           }
+           var newFile = {};
+           newFile.file = response.file;
+           newFile.name = response.name;
+           newFile.size = response.size;
+           newFile.status = 'new';
+           this.file[0] = newFile;
+           this.uploader.removeFile(item.id);
+        }.bind(this));
+        this.updateFiles();
+    },
+    updateFiles: function() {
+        this.getElement('save').value = this.file.toJSON();
+        this.file.each(function(row){
+            row.size = this.uploader.formatSize(row.size);
+            $(this.containerId + '-old').innerHTML = this.listTemplate.evaluate(row);
+            $(this.containerId + '-new').hide();
+            $(this.containerId + '-old').show();
+        }.bind(this));
+    }
+}
+
+var alertAlreadyDisplayed = false;
+
+Validation.addAllThese([
+    ['validate-package-file', 'Please upload a file.', function(v,element) {
+            linkType = element.up(0).down('input[value="file"]');
+            if (linkType.checked && (v == '' || v == '[]')) {
+                newFileContainer = element.up(0).down('div.new-file');
+                if (!alertAlreadyDisplayed && (newFileContainer.empty() || newFileContainer.style.display != 'none')) {
+                    alertAlreadyDisplayed = true;
+                    alert('There are files that were selected but not uploaded yet. Please upload or remove them first');
+                }
+                return false;
+            }
+            return true;
+        }]
+    ]);
+
+Validation.addAllThese([
+    ['validate-package-url', 'Please specify Url.', function(v,element) {
+            linkType = element.up(0).down('input[value="url"]');
+            if (linkType.checked && v == '') {
+                return false;
+            }
+            return true;
+        }]
+    ]);
+//]]>
+</script>
+
+<div id="alert_messages_block"><?php echo $this->getMessageHtml() ?></div>
+
+<div class="entry-edit">
+<?php echo $this->getChildHtml('accordion') ?>
+</div>
+<div style="display:none">
+    <div id="custom-advice-container"></div>
+</div>
+<?php if ($this->isReadonly()): ?>
+<script type="text/javascript">
+$('packageInfo').select('input', 'select', 'textarea', 'button').each(function (item){
+    item.disabled = true;
+    if (item.tagName.toLowerCase() == 'button') {
+        item.addClassName('disabled');
+    }
+});
+</script>
+<?php endif; ?>
+
+<script type="text/javascript">
+
+    var maintainerController = Class.create();
+
+    maintainerController.prototype = {
+        initialize : function(fieldId, maintainers, grid) {
+            this.saveField = $(fieldId);
+            this.saveFieldId = fieldId;
+            this.maintainers    = $H(maintainers);
+            this.grid        = grid;
+            this.tabIndex    = 1000;
+            this.grid.rowClickCallback = this.rowClick.bind(this);
+            this.grid.initRowCallback = this.rowInit.bind(this);
+            this.grid.checkboxCheckCallback = this.registerMaintainer.bind(this);
+            this.grid.rows.each(this.eachRow.bind(this));
+            this.saveField.value = this.serializeObject(this.maintainers);
+            this.grid.reloadParams = {'maintainer[]':this.maintainers.keys()};
+        },
+        eachRow : function(row) {
+            this.rowInit(this.grid, row);
+        },
+        registerMaintainer : function(grid, element, checked) {
+            if(checked){
+                if(element.inputElements) {
+                    this.maintainers.set(element.value, {});
+                    for(var i = 0; i < element.inputElements.length; i++) {
+                        element.inputElements[i].disabled = false;
+                        this.maintainers.get(element.value)[element.inputElements[i].name] = element.inputElements[i].value;
+                    }
+                }
+            }
+            else{
+                if(element.inputElements){
+                    for(var i = 0; i < element.inputElements.length; i++) {
+                        element.inputElements[i].disabled = true;
+                    }
+                }
+
+                this.maintainers.unset(element.value);
+            }
+            this.saveField.value = this.serializeObject(this.maintainers);
+            this.grid.reloadParams = {'maintainer[]':this.maintainers.keys()};
+        },
+        serializeObject : function(hash) {
+            var clone = hash.clone();
+            clone.each(function(pair) {
+                clone.set(pair.key, encode_base64(Object.toQueryString(pair.value)));
+            });
+            return clone.toQueryString();
+        },
+        rowClick : function(grid, event) {
+            var trElement = Event.findElement(event, 'tr');
+
+        	var isInput   = false;
+            if (Event.element(event).tagName == 'INPUT' ||
+                Event.element(event).tagName == 'SELECT' ||
+                Event.element(event).tagName == 'OPTION') {
+            	isInput   = true;
+            }
+            if(trElement){
+                var checkbox = Element.select(trElement, 'input');
+                if(checkbox[0]){
+                    var checked = isInput ? checkbox[0].checked : !checkbox[0].checked;
+                    this.grid.setCheckboxChecked(checkbox[0], checked);
+                }
+            }
+        },
+        inputChange : function(event) {
+            var element = Event.element(event);
+            if(element && element.checkboxElement && element.checkboxElement.checked){
+                this.maintainers.get(element.checkboxElement.value)[element.name] = element.getValue();
+                this.saveField.value = this.serializeObject(this.maintainers);
+            }
+        },
+        rowInit : function(grid, row) {
+            var checkbox = $(row).select('.checkbox')[0];
+            var inputs = $(row).select('select');
+            if(checkbox && inputs.length > 0) {
+                checkbox.inputElements = inputs;
+                for(var i = 0; i < inputs.length; i++) {
+                    inputs[i].checkboxElement = checkbox;
+                    if(this.maintainers.get(checkbox.value) && this.maintainers.get(checkbox.value)[inputs[i].name]) {
+                        inputs[i].value = this.maintainers.get(checkbox.value)[inputs[i].name];
+                    }
+                    inputs[i].disabled = !checkbox.checked;
+                    inputs[i].tabIndex = this.tabIndex++;
+                    Event.observe(inputs[i],'keyup', this.inputChange.bind(this));
+                    Event.observe(inputs[i],'change', this.inputChange.bind(this));
+                    Event.observe(inputs[i],'click', this.inputChange.bind(this));
+                }
+            }
+        }
+    };
+</script>
+
+<!--
+<div><input type="hidden" name="affect_package_information" value="1" /></div>
+-->

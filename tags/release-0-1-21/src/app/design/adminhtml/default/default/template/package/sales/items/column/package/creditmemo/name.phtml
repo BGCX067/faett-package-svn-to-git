@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * Faett_Package
+ *
+ * NOTICE OF LICENSE
+ * 
+ * Faett_Package is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Faett_Package is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Faett_Package.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Faett_Package to newer
+ * versions in the future. If you wish to customize Faett_Package for your
+ * needs please refer to http://www.faett.net for more information.
+ *
+ * @category   Faett
+ * @package    Faett_Package
+ * @copyright  Copyright (c) 2009 <tw@faett.net> Tim Wagner
+ * @license    <http://www.gnu.org/licenses/> 
+ * 			   GNU General Public License (GPL 3)
+ */
+
+?>
+
+<?php if ($_item = $this->getItem()): ?>
+    <h5 class="title"><?php echo $_item->getName() ?></h5>
+    <div><strong><?php echo $this->helper('sales')->__('SKU') ?>:</strong> <?php echo implode('<br />', Mage::helper('catalog')->splitSku($this->getSku())); ?></div>
+    <?php if ($this->getOrderOptions()): ?>
+        <dl class="item-options">
+        <?php foreach ($this->getOrderOptions() as $_option): ?>
+            <dt><?php echo $_option['label'] ?></dt>
+            <dd>
+            <?php if (isset($_option['custom_view']) && $_option['custom_view']): ?>
+                <?php echo $_option['value'];?>
+            <?php else: ?>
+                <?php echo Mage::helper('core/string')->truncate($_option['value'], 55, '', $_remainder);?>
+                <?php if ($_remainder):?>
+                    ... <span id="<?php echo $_id = 'id' . uniqid()?>"><?php echo $_remainder ?></span>
+                    <script type="text/javascript">
+                    $('<?php echo $_id ?>').hide();
+                    $('<?php echo $_id ?>').up().observe('mouseover', function(){$('<?php echo $_id ?>').show();});
+                    $('<?php echo $_id ?>').up().observe('mouseout',  function(){$('<?php echo $_id ?>').hide();});
+                    </script>
+                <?php endif;?>
+            <?php endif;?>
+            </dd>
+        <?php endforeach; ?>
+        </dl>
+    <?php endif; ?>
+    <?php echo $_item->getDescription() ?>
+<?php endif; ?>

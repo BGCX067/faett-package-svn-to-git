@@ -1,0 +1,225 @@
+<?php
+
+/**
+ * Faett_Package
+ *
+ * NOTICE OF LICENSE
+ * 
+ * Faett_Package is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Faett_Package is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with Faett_Package.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Faett_Package to newer
+ * versions in the future. If you wish to customize Faett_Package for your
+ * needs please refer to http://www.faett.net for more information.
+ *
+ * @category   Faett
+ * @package    Faett_Package
+ * @copyright  Copyright (c) 2009 <tw@faett.net> Tim Wagner
+ * @license    <http://www.gnu.org/licenses/> 
+ * 			   GNU General Public License (GPL 3)
+ */
+
+?>
+<?php
+/**
+ * @see Faett_Package_Block_Adminhtml_Catalog_Product_Edit_Tab_Package_Samples
+ */
+?>
+
+<?php $_product = $this->getProduct() ?>
+<div class="fieldset">
+    <table cellspacing="0" class="form-list">
+
+        <tbody>
+            <tr class="headings">
+                <td class="label"><label for="name"><?php echo Mage::helper('package')->__('Title')?></label>
+                </td>
+                <td class="value">
+                    <input type="text" class="input-text" name="product[samples_title]" value="<?php echo $_product->getId()?$_product->getSamplesTitle():$this->getSamplesTitle() ?>" <?php echo ($_product->getStoreId() && $this->getUsedDefault())?'disabled="disabled"':'' ?> />
+                </td>
+                <td class="scope-label"><?php if (!Mage::app()->isSingleStoreMode()): ?>[STORE VIEW]<?php endif; ?></td>
+                <td class="value use-default">
+                <?php if($_product->getStoreId()): ?>
+                    <input id="sample_title_default" type="checkbox" name="use_default[]" value="samples_title" onclick="toggleValueElements(this, this.parentNode.parentNode)" <?php echo $this->getUsedDefault()?'checked="checked"':'' ?> />
+                    <label class="normal" for="sample_title_default">Use Default Value</label>
+                <?php endif; ?>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <br />
+    <div class="grid">
+        <div class="hor-scroll">
+            <table cellspacing="0" class="data border">
+                <col />
+                <col width="1" />
+                <col width="1" />
+                <col width="1" />
+                <thead>
+                    <tr class="headings">
+                        <th><?php echo Mage::helper('package')->__('Title') ?> <span class="required">*</span></th>
+                        <th><?php echo Mage::helper('package')->__('File') ?></th>
+                        <th><span class="nobr"><?php echo Mage::helper('package')->__('Sort Order') ?></span></th>
+                        <th>&nbsp;</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="a-right"><?php echo $this->getAddButtonHtml() ?>&nbsp;<?php echo $this->getUploadButtonHtml() ?></td>
+                    </tr>
+                </tfoot>
+                <tbody id="sample_items_body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+//<![CDATA[>
+var sampleTemplate = '<tr>'+
+                        '<td>'+
+                            '<input type="hidden" class="__delete__" name="package[sample][{{id}}][is_delete]" value="" />'+
+                            '<input type="hidden" name="package[sample][{{id}}][sample_id]" value="{{sample_id}}" />'+
+                            '<input type="text" class="required-entry input-text" name="package[sample][{{id}}][title]" value="{{title}}" />'+
+                            '<?php echo $_product->getStoreId()?'<br /><input type="checkbox" id="package_sample_{{id}}_title" name="package[sample][{{id}}][use_default_title]" value="1" /><label class="normal" for="package_sample_{{id}}_title">Use Default Value</label>':'' ?>'+
+                        '</td>'+
+                        '<td>'+
+                            '<div class="files-wide">'+
+                                '<div class="row">'+
+                                    '<label for="package_sample_{{id}}_file_type"><input type="radio" class="radio validate-one-required-by-name" id="package_sample_{{id}}_file_type" name="package[sample][{{id}}][type]" value="file"{{file_checked}} /> File:</label>'+
+                                    '<input type="hidden" class="validate-package-file" id="package_sample_{{id}}_file_save" name="package[sample][{{id}}][file]" value="{{file_save}}" />'+
+                                    '<div id="package_sample_{{id}}_file" class="uploader">'+
+                                        '<div id="package_sample_{{id}}_file-old" class="file-row-info"></div>'+
+                                        '<div id="package_sample_{{id}}_file-new" class="file-row-info new-file"></div>'+
+                                        '<div class="buttons">'+
+                                            '<div id="package_sample_{{id}}_file-install-flash" style="display:none">'+
+                                                '<?php echo Mage::helper('media')->__('This content requires last version of Adobe Flash Player. <a href="%s">Get Flash</a>', 'http://www.adobe.com/go/getflash/') ?>'+
+                                            '</div>'+
+                                        '</div>'+
+                                        '<div class="clear"></div>'+
+                                    '</div>'+
+                                '</div>'+
+                                '<div class="row">'+
+                                    '<label for="package_sample_{{id}}_url_type"><input type="radio" class="radio validate-one-required-by-name" id="package_sample_{{id}}_url_type" name="package[sample][{{id}}][type]" value="url"{{url_checked}} /> URL:</label> <input type="text" class="validate-package-url input-text" name="package[sample][{{id}}][sample_url]" value="{{sample_url}}" />'+
+                                '</div>'+
+                                '<div>'+
+                                    '<span id="package_sample_{{id}}_container"></span>'+
+                                '</div>'+
+                            '</div>'+
+
+                        '</td>'+
+                        '<td class="a-center"><input type="text" name="package[sample][{{id}}][sort_order]" value="{{sort_order}}" class="input-text sort" /></td>'+
+                        '<td>'+
+                            '<button type="button" class="scalable delete icon-btn delete-sample-item"><span>Delete</span></button>'+
+                        '</td>'+
+                    '</tr>';
+var sampleItems = {
+    tbody : $('sample_items_body'),
+    templateSyntax : /(^|.|\r|\n)({{(\w+)}})/,
+    templateText : sampleTemplate,
+    itemCount : 0,
+    add : function(data) {
+        alertAlreadyDisplayed = false;
+        this.template = new Template(this.templateText, this.templateSyntax);
+
+        if(!data.sample_id){
+            data = {};
+            data.sample_type = 'file';
+            data.sample_id  = 0;
+        }
+
+        data.id = this.itemCount;
+
+        if (data.sample_type == 'url') {
+            data.url_checked = ' checked="checked"';
+        } else if (data.sample_type == 'file') {
+            data.file_checked = ' checked="checked"';
+        }
+
+        Element.insert(this.tbody, {'bottom':this.template.evaluate(data)});
+
+        scopeTitle = $('package_sample_'+data.id+'_title');
+        if (scopeTitle) {
+            Event.observe(scopeTitle, 'click', function(event){
+                scopeElm = $(Event.findElement(event, 'input'));
+                titleField = scopeElm.up(0).down('input[type="text"]');
+                if (scopeElm.checked == true) {
+                    titleField.disabled = true;
+                } else {
+                    titleField.disabled = false;
+                }
+            });
+        }
+        if (!data.store_title && scopeTitle) {
+            scopeTitle.up(0).down('input[type="text"]').disabled = true;
+            scopeTitle.checked = true;
+        }
+
+        sampleUrl = $('package_sample_'+data.id+'_url_type');
+
+        if (!data.file_save) {
+            data.file_save = [];
+        }
+        new Package.FileUploader(
+            'samples',
+            data.id,
+            sampleUrl.up('td').down('div.uploader'),
+            'package[sample]['+data.id+']',
+            data.file_save,
+            'package_sample_'+data.id+'_file',
+            <?php echo $this->getConfigJson() ?>
+        );
+        sampleUrl.advaiceContainer = 'package_sample_'+data.id+'_container';
+        sampleFile = $('package_sample_'+data.id+'_file_type');
+        sampleFile.advaiceContainer = 'package_sample_'+data.id+'_container';
+        $('package_sample_'+data.id+'_file_save').advaiceContainer = 'package_sample_'+data.id+'_container';
+
+        this.itemCount++;
+        this.bindRemoveButtons();
+    },
+    remove : function(event){
+        var element = $(Event.findElement(event, 'tr'));
+        alertAlreadyDisplayed = false;
+        if(element){
+            element.down('input[type="hidden"].__delete__').value = '1';
+            element.down('div.flex').remove();
+            element.addClassName('no-display');
+            element.addClassName('ignore-validate');
+            element.hide();
+        }
+    },
+    bindRemoveButtons : function(){
+        var buttons = $$('tbody#sample_items_body .delete-sample-item');
+        for(var i=0;i<buttons.length;i++){
+            if(!$(buttons[i]).binded){
+                $(buttons[i]).binded = true;
+                Event.observe(buttons[i], 'click', this.remove.bind(this));
+            }
+        }
+    }
+}
+
+sampleItems.bindRemoveButtons();
+
+if($('add_sample_item')){
+    Event.observe('add_sample_item', 'click', sampleItems.add.bind(sampleItems));
+}
+
+<?php foreach ($this->getSampleData() as $item): ?>
+    sampleItems.add(<?php echo $item->toJson() ?>);
+<?php endforeach; ?>
+
+//]]>
+</script>
